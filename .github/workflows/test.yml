@@ -48,5 +48,5 @@ jobs:
           "C:\Program Files\MongoDB\Server\4.2.0\bin\mongo.exe"
 
       # Tests
-      - name: Test
-        run: make test
+      - name: Run Test
+        run: deno test --allow-net --allow-read --allow-write --unstable --allow-plugin
