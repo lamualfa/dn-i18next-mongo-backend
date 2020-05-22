@@ -4,7 +4,8 @@ on: [push, pull_request]
 
 jobs:
   test:
-    name: 'Test'
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     steps:
       # Clone repository
       - uses: actions/checkout@master
