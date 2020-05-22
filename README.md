@@ -3,6 +3,8 @@
 [![Maintainability](https://api.codeclimate.com/v1/badges/759802f4d5ecf5ecd167/maintainability)](https://codeclimate.com/github/lamualfa/dn-i18next-mongo-backend/maintainability)
 [![Release](https://badgen.net/badge/release/v0.0.1/blue)](https://github.com/lamualfa/dn-i18next-mongo-backend)
 
+## Are you a NodeJS user? If `true`, we provide the same library for NodeJS. See: [Mongo Backend for NodeJS](https://github.com/lamualfa/i18next-node-mongo-backend)
+
 # Integrate [i18next](https://github.com/i18next/i18next) with [MongoDB](https://www.mongodb.com/) in Deno 🦖
 
 <div align="center">
