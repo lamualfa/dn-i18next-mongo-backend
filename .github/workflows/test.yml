@@ -1,0 +1,7 @@
+steps:
+  - uses: actions/checkout@master
+  - uses: denolib/setup-deno@master
+    with:
+      deno-version: v1.x
+  - name: Functional Test
+  - run: make test
