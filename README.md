@@ -1,4 +1,4 @@
-![.github/workflows/test.yml](https://github.com/lamualfa/dn-i18next-mongo-backend/workflows/.github/workflows/test.yml/badge.svg)
+![ci](https://github.com/lamualfa/dn-i18next-mongo-backend/workflows/ci/badge.svg)
 [![License](https://badgen.net/github/license/lamualfa/dn-i18next-mongo-backend?color=purple)](LICENSE)
 [![Maintainability](https://api.codeclimate.com/v1/badges/759802f4d5ecf5ecd167/maintainability)](https://codeclimate.com/github/lamualfa/dn-i18next-mongo-backend/maintainability)
 [![Release](https://badgen.net/badge/release/v0.0.1/blue)](https://github.com/lamualfa/dn-i18next-mongo-backend)
