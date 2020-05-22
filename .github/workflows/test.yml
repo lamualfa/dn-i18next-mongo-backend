@@ -1,25 +1,52 @@
-name: 'Test'
+name: ci
 
 on: [push, pull_request]
 
 jobs:
-  test:
+  build:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        os: [macOS-latest, windows-2019, ubuntu-16.04]
+
     steps:
-      # Clone repository
+      - name: Setup Environment
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+          echo ::set-env name=GH_ACTIONS::1
+          echo ::set-env name=RUST_BACKTRACE::full
+
       - uses: actions/checkout@master
-      - uses: denolib/setup-deno@master
+
+      - name: Install Deno
+        uses: denolib/setup-deno@master
         with:
-          deno-version: v1.x
+          deno-version: 1.0.0
+      - name: Log versions
+        run: |
+          deno --version
 
       # Start MongoDB
+      - name: Start MongoDB (MacOs)
+        if: startsWith(matrix.os, 'mac')
+        run: |
+          brew tap mongodb/brew
+          brew install mongodb-community@4.2
+          brew services start mongodb-community@4.2
       - name: Start MongoDB (Linux)
         if: startsWith(matrix.os, 'ubuntu')
         uses: wbari/start-mongoDB@v0.2
         with:
           mongoDBVersion: 4.2
+      - name: Start MongoDB (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          choco install mongodb --version=4.2.0 --no-progress
+          "C:\Program Files\MongoDB\Server\4.2.0\bin\mongo.exe"
 
-      # Run testing
-      - name: Functional Test
+      # Tests
+      - name: Test
         run: make test

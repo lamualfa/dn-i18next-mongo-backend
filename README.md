@@ -1,11 +1,11 @@
 ![.github/workflows/test.yml](https://github.com/lamualfa/dn-i18next-mongo-backend/workflows/.github/workflows/test.yml/badge.svg)
 [![License](https://badgen.net/github/license/lamualfa/dn-i18next-mongo-backend?color=purple)](LICENSE)
 [![Maintainability](https://api.codeclimate.com/v1/badges/759802f4d5ecf5ecd167/maintainability)](https://codeclimate.com/github/lamualfa/dn-i18next-mongo-backend/maintainability)
-[![Version](https://badgen.net/badge/version/v0.0.1/blue)](https://github.com/lamualfa/dn-i18next-mongo-backend)
+[![Release](https://badgen.net/badge/release/v0.0.1/blue)](https://github.com/lamualfa/dn-i18next-mongo-backend)
 
 # Integrate [i18next](https://github.com/i18next/i18next) with [MongoDB](https://www.mongodb.com/) in Deno 🦖
 
-<img src="asset/i18next.png" alt="I18next Logo" width="100"/><img src="asset/mongodb.png" alt="MongoDB Logo" width="330" style="margin-left: 70px;"/>
+<img src="asset/banner.png" alt="Banner"/>
 
 # Introduction
 
