@@ -30,6 +30,18 @@ export interface Callback {
   (err?: any, data?: any): void
 }
 
+function sanitizeMongodbOpts(opts: BackendOptions) {
+  const mongodbOpts: ClientOptions = Object.assign({}, opts.mongodbOpts, {
+    hosts: [`${opts.host || 'localhost'}:${opts.port || 27017}`]
+  })
+  if (opts.user && opts.password) {
+    mongodbOpts.username = opts.user
+    mongodbOpts.password = opts.password
+  }
+
+  return mongodbOpts
+}
+
 // https://www.i18next.com/misc/creating-own-plugins#backend
 export class Backend {
   langFieldName: string = 'lang'
@@ -84,21 +96,14 @@ export class Backend {
 
     if (opts.collection) {
       this.collection = opts.collection
-    } else {
-      if (!opts.dbName) throw new TypeError("The `dbName` argument is needed if you don't pass the `collection` argument.");
-
-      const mongodbOpts: ClientOptions = Object.assign({}, opts.mongodbOpts, {
-        hosts: [`${opts.host || 'localhost'}:${opts.port || 27017}`]
-      })
-      if (opts.user && opts.password) {
-        mongodbOpts.username = opts.user
-        mongodbOpts.password = opts.password
-      }
-
-      this.client = new MongoClient()
-      this.client.connectWithOptions(mongodbOpts)
-      this.collection = this.client.database(opts.dbName).collection(opts.colName || 'i18n')
+      return
     }
+
+    if (!opts.dbName) throw new TypeError("The `dbName` argument is needed if you don't pass the `collection` argument.");
+
+    this.client = new MongoClient()
+    this.client.connectWithOptions(sanitizeMongodbOpts(opts))
+    this.collection = this.client.database(opts.dbName).collection(opts.colName || 'i18n')
   }
 
   read(lang: string, ns: string, cb?: Callback) {
@@ -136,7 +141,6 @@ export class Backend {
 
   create(langs: string | Array<string>, ns: string, key: string, fallbackVal: any, cb: Callback) {
     if (typeof langs === 'string') langs = [langs]
-
     Promise.all(
       langs.map((lang: string) => {
         // `mongo@v0.7.0` does not support update with upsert method
@@ -147,20 +151,18 @@ export class Backend {
 
         return this.collection.findOne(query).then(findOutput => {
           if (findOutput)
-            return this.collection.updateOne({
+            return findOutput ? this.collection.updateOne({
               _id: findOutput._id
             }, {
               $set: {
                 [`${this.dataFieldName}.${key}`]: fallbackVal,
               }
+            }) : this.collection.insertOne({
+              ...query,
+              [this.dataFieldName]: {
+                [key]: fallbackVal
+              }
             })
-
-          return this.collection.insertOne({
-            ...query,
-            [this.dataFieldName]: {
-              [key]: fallbackVal
-            }
-          })
         })
       }
       ),

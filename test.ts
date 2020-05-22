@@ -74,18 +74,18 @@ async function read(backend: Backend) {
 
 async function readMultiTest(backend: Backend) {
   const expected = {}
-  for (let i = 0; i < TEST_DATA.length; i += 1) {
-    const data = TEST_DATA[i]
+  TEST_DATA.forEach((data) => {
     const lang = data[LANG_FIELD_NAME];
     const ns = data[NS_FIELD_NAME];
+    const val = data[DATA_FIELD_NAME]
 
     if (getOneLevel(expected, lang))
-      setOneLevel(getOneLevel(expected, lang), ns, data[DATA_FIELD_NAME])
+      setOneLevel(getOneLevel(expected, lang), ns, val)
     else
       setOneLevel(expected, lang, {
-        [ns]: data[DATA_FIELD_NAME],
+        [ns]: val,
       })
-  }
+  })
 
   const target = await new Promise((resolve, reject) => backend.readMulti(TEST_DATA.map(doc => doc[LANG_FIELD_NAME]), TEST_DATA.map(doc => doc[NS_FIELD_NAME]), (err, data) => err ? reject(err) : resolve(data)))
 
