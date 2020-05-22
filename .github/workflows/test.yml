@@ -1,7 +1,17 @@
 steps:
+  # Clone repository
   - uses: actions/checkout@master
   - uses: denolib/setup-deno@master
     with:
       deno-version: v1.x
+
+  # Start MongoDB
+  - name: Start MongoDB (Linux)
+    if: startsWith(matrix.os, 'ubuntu')
+    uses: wbari/start-mongoDB@v0.2
+    with:
+      mongoDBVersion: 4.2
+
+  # Run testing
   - name: Functional Test
-  - run: make test
+    run: make test

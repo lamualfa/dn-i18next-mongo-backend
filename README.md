@@ -1,11 +1,15 @@
-[![License](https://badgen.net/github/license/lamualfa/dn-i18next-mongo-backend)](LICENSE)
+![.github/workflows/test.yml](https://github.com/lamualfa/dn-i18next-mongo-backend/workflows/.github/workflows/test.yml/badge.svg)
+[![License](https://badgen.net/github/license/lamualfa/dn-i18next-mongo-backend?color=purple)](LICENSE)
+[![Maintainability](https://api.codeclimate.com/v1/badges/759802f4d5ecf5ecd167/maintainability)](https://codeclimate.com/github/lamualfa/dn-i18next-mongo-backend/maintainability)
+[![Version](https://badgen.net/badge/version/v0.0.1/blue)](https://github.com/lamualfa/dn-i18next-mongo-backend)
+
 # Integrate [i18next](https://github.com/i18next/i18next) with [MongoDB](https://www.mongodb.com/) in Deno 🦖
 
 <img src="asset/i18next.png" alt="I18next Logo" width="100"/><img src="asset/mongodb.png" alt="MongoDB Logo" width="330" style="margin-left: 70px;"/>
 
 # Introduction
 
-This is a [i18next](https://github.com/i18next/i18next) backend to be used Deno. It will load resources from a [MongoDB](https://www.mongodb.org) database with official node mongodb [driver](https://mongodb.github.io/node-mongodb-native/3.5/).
+This is a [i18next](https://github.com/i18next/i18next) backend to be used in Deno. It will load resources from a [MongoDB](https://www.mongodb.org) database.
 
 # Usage
 

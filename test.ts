@@ -23,6 +23,10 @@ const BACKEND_STANDARD_OPTS = {
   colName: DB_COL,
   ...BACKEND_BASE_OPTS
 }
+const getBackendCollectionOpts = (collection: Collection) => ({
+  ...BACKEND_BASE_OPTS,
+  collection
+})
 
 const TEST_DATA = [
   {
@@ -142,29 +146,15 @@ Deno.test('Create', wrapTest(async function (collection) {
 
 
 Deno.test('Read with custom collection', wrapTest(async function (collection) {
-  const backend: Backend = new Backend(null, {
-    ...BACKEND_BASE_OPTS,
-    collection
-  })
-
-  await read(backend)
+  await read(new Backend(null, getBackendCollectionOpts(collection)))
 }))
 
 
 Deno.test('Read Multi with custom collection', wrapTest(async function (collection) {
-  const backend: Backend = new Backend(null, {
-    ...BACKEND_BASE_OPTS,
-    collection
-  })
 
-  await readMultiTest(backend)
+  await readMultiTest(new Backend(null, getBackendCollectionOpts(collection)))
 }))
 
 Deno.test('Create with custom collection', wrapTest(async function (collection) {
-  const backend: Backend = new Backend(null, {
-    ...BACKEND_BASE_OPTS,
-    collection
-  })
-
-  await createTest(backend, collection)
+  await createTest(new Backend(null, getBackendCollectionOpts(collection)), collection)
 }))

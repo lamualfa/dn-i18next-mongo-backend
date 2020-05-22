@@ -1,13 +1,13 @@
 import { MongoClient, ClientOptions, Collection } from './deps.ts';
 
-import { sanitizeMongoDbFieldName } from './lib/sanitizer.ts'
+import { sanitizeMongoDbFieldName as sanitizeFieldName } from './lib/sanitizer.ts'
 import { getOneLevel, setOneLevel } from './lib/props.ts'
 
-interface ErrorHandler {
+export interface ErrorHandler {
   (err: any): void
 }
 
-interface BackendOptions {
+export interface BackendOptions {
   langFieldName?: string,
   nsFieldName?: string,
   dataFieldName?: string,
@@ -26,7 +26,7 @@ interface BackendOptions {
 }
 
 
-interface Callback {
+export interface Callback {
   (err?: any, data?: any): void
 }
 
@@ -55,55 +55,49 @@ export class Backend {
     this.init(services, opts);
   }
 
+  sanitizeOpts(opts: BackendOptions) {
+    this.langFieldName = opts.langFieldName || 'lang'
+    this.nsFieldName = opts.nsFieldName || 'ns'
+    this.dataFieldName = opts.dataFieldName || 'data'
+    this.readOnError = opts.readOnError || console.error
+    this.readMultiOnError = opts.readMultiOnError || console.error
+    this.createOnError = opts.createOnError || console.error
+
+    if (opts.sanitizeFieldName) {
+      this.langFieldName = sanitizeFieldName(
+        this.langFieldName,
+      );
+      this.nsFieldName = sanitizeFieldName(
+        this.nsFieldName,
+      );
+      this.dataFieldName = sanitizeFieldName(
+        this.dataFieldName,
+      );
+    }
+  }
+
   // i18next required methods
 
   init(services: any, opts: BackendOptions) {
     this.services = services
-
-    if (opts.langFieldName) this.langFieldName = opts.langFieldName
-    if (opts.nsFieldName) this.nsFieldName = opts.nsFieldName
-    if (opts.dataFieldName) this.dataFieldName = opts.dataFieldName
-
-    if (opts.readOnError) this.readOnError = opts.readOnError
-    if (opts.readMultiOnError) this.readMultiOnError = opts.readMultiOnError
-    if (opts.createOnError) this.createOnError = opts.createOnError
+    this.sanitizeOpts(opts)
 
     if (opts.collection) {
       this.collection = opts.collection
     } else {
       if (!opts.dbName) throw new TypeError("The `dbName` argument is needed if you don't pass the `collection` argument.");
 
-      const host: string = opts.host || 'localhost'
-      const port: number = opts.port || 27017
-      const dbName: string = opts.dbName
-      const colName: string = opts.colName || 'i18n'
-
       const mongodbOpts: ClientOptions = Object.assign({}, opts.mongodbOpts, {
-        hosts: [`${host}:${port}`]
+        hosts: [`${opts.host || 'localhost'}:${opts.port || 27017}`]
       })
-
       if (opts.user && opts.password) {
         mongodbOpts.username = opts.user
         mongodbOpts.password = opts.password
       }
 
       this.client = new MongoClient()
-
       this.client.connectWithOptions(mongodbOpts)
-      const db = this.client.database(dbName)
-      this.collection = db.collection(colName)
-    }
-
-    if (opts.sanitizeFieldName) {
-      this.langFieldName = sanitizeMongoDbFieldName(
-        this.langFieldName,
-      );
-      this.nsFieldName = sanitizeMongoDbFieldName(
-        this.nsFieldName,
-      );
-      this.dataFieldName = sanitizeMongoDbFieldName(
-        this.dataFieldName,
-      );
+      this.collection = this.client.database(opts.dbName).collection(opts.colName || 'i18n')
     }
   }
 
@@ -130,16 +124,11 @@ export class Backend {
         [this.nsFieldName]: { $in: nss },
       }).then(docs => {
         const parsed = {};
-
-        for (let i = 0; i < docs.length; i += 1) {
-          const doc = docs[i];
+        docs.forEach((doc: any) => {
           const lang = doc[this.langFieldName];
-          const ns = doc[this.nsFieldName];
-          const data = doc[this.dataFieldName];
-
           if (!getOneLevel(parsed, lang)) setOneLevel(parsed, lang, {})
-          setOneLevel(getOneLevel(parsed, lang), ns, data)
-        }
+          setOneLevel(getOneLevel(parsed, lang), doc[this.nsFieldName], doc[this.dataFieldName])
+        })
 
         cb(null, parsed);
       }).catch(this.readMultiOnError)
@@ -148,35 +137,32 @@ export class Backend {
   create(langs: string | Array<string>, ns: string, key: string, fallbackVal: any, cb: Callback) {
     if (typeof langs === 'string') langs = [langs]
 
-    const col = this.collection
     Promise.all(
-      langs.map((lang: string) =>
-        (async () => {
-          // `mongo@v0.7.0` does not support update with upsert method
-          const query = {
-            [this.langFieldName]: lang,
-            [this.nsFieldName]: ns,
-          }
+      langs.map((lang: string) => {
+        // `mongo@v0.7.0` does not support update with upsert method
+        const query = {
+          [this.langFieldName]: lang,
+          [this.nsFieldName]: ns,
+        }
 
-          const findOutput = await col.findOne(query)
-          if (findOutput) {
-            await col.updateOne({
+        return this.collection.findOne(query).then(findOutput => {
+          if (findOutput)
+            return this.collection.updateOne({
               _id: findOutput._id
             }, {
               $set: {
                 [`${this.dataFieldName}.${key}`]: fallbackVal,
               }
             })
-          } else {
-            await col.insertOne({
-              ...query,
-              [this.dataFieldName]: {
-                [key]: fallbackVal
-              }
-            })
-          }
 
-        })()
+          return this.collection.insertOne({
+            ...query,
+            [this.dataFieldName]: {
+              [key]: fallbackVal
+            }
+          })
+        })
+      }
       ),
     ).then(() => cb()).catch(this.createOnError)
   }
