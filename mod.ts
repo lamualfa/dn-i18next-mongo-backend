@@ -1,34 +1,7 @@
 import { MongoClient, ClientOptions, Collection } from './deps.ts';
-
+import { EventErrorHandler, BackendOptions, EventCallback } from './types.ts'
 import { sanitizeMongoDbFieldName as sanitizeFieldName } from './lib/sanitizer.ts'
 import { getOneLevel, setOneLevel } from './lib/props.ts'
-
-export interface ErrorHandler {
-  (err: any): void
-}
-
-export interface BackendOptions {
-  langFieldName?: string,
-  nsFieldName?: string,
-  dataFieldName?: string,
-  sanitizeFieldName?: boolean,
-  dbName?: string,
-  colName?: string,
-  host?: string,
-  port?: number,
-  user?: string,
-  password?: string,
-  collection?: Collection,
-  mongodbOpts?: ClientOptions,
-  readOnError?: ErrorHandler,
-  readMultiOnError?: ErrorHandler,
-  createOnError?: ErrorHandler
-}
-
-
-export interface Callback {
-  (err?: any, data?: any): void
-}
 
 function sanitizeMongodbOpts(opts: BackendOptions) {
   const mongodbOpts: ClientOptions = Object.assign({}, opts.mongodbOpts, {
@@ -54,13 +27,16 @@ export class Backend {
   client?: MongoClient
   mongodbOpts?: ClientOptions
 
-  readOnError: ErrorHandler = console.error
-  readMultiOnError: ErrorHandler = console.error
-  createOnError: ErrorHandler = console.error
+  readOnError: EventErrorHandler = console.error
+  readMultiOnError: EventErrorHandler = console.error
+  createOnError: EventErrorHandler = console.error
 
   collection!: Collection
 
-  // https://www.i18next.com/misc/creating-own-plugins#make-sure-to-set-the-plugin-type
+  /**
+   * I18next required property.
+   * - See: https://www.i18next.com/misc/creating-own-plugins#make-sure-to-set-the-plugin-type
+   */
   static type: string = 'Backend'
 
   constructor(services: any, opts: BackendOptions) {
@@ -88,10 +64,13 @@ export class Backend {
     }
   }
 
-  // i18next required methods
-
+  /**
+   * I18next required method for backend plugin.
+   * - See: https://www.i18next.com/misc/creating-own-plugins#backend
+   */
   init(services: any, opts: BackendOptions) {
     this.services = services
+    // Separated from the `init` function to avoid code smells by the CodeClimate which only allows 1 function to contain a maximum of 25 lines.
     this.sanitizeOpts(opts)
 
     if (opts.collection) {
@@ -106,7 +85,11 @@ export class Backend {
     this.collection = this.client.database(opts.dbName).collection(opts.colName || 'i18n')
   }
 
-  read(lang: string, ns: string, cb?: Callback) {
+  /**
+   * I18next required method for backend plugin.
+   * - See: https://www.i18next.com/misc/creating-own-plugins#backend
+   */
+  read(lang: string, ns: string, cb?: EventCallback) {
     if (!cb) return;
 
     const query = {}
@@ -120,7 +103,11 @@ export class Backend {
     }).catch(this.readOnError)
   }
 
-  readMulti(langs: Array<string>, nss: Array<string>, cb?: Callback) {
+  /**
+   * I18next required method for backend plugin.
+   * - See: https://www.i18next.com/misc/creating-own-plugins#backend
+   */
+  readMulti(langs: Array<string>, nss: Array<string>, cb?: EventCallback) {
     if (!cb) return;
 
     this.collection
@@ -139,7 +126,11 @@ export class Backend {
       }).catch(this.readMultiOnError)
   }
 
-  create(langs: string | Array<string>, ns: string, key: string, fallbackVal: any, cb: Callback) {
+  /**
+   * I18next required method for backend plugin.
+   * - See: https://www.i18next.com/misc/creating-own-plugins#backend
+   */
+  create(langs: string | Array<string>, ns: string, key: string, fallbackVal: any, cb: EventCallback) {
     if (typeof langs === 'string') langs = [langs]
     Promise.all(
       langs.map((lang: string) => {
