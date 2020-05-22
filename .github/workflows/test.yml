@@ -1,3 +1,7 @@
+name: 'Test'
+
+on: [push, pull_request]
+
 steps:
   # Clone repository
   - uses: actions/checkout@master
