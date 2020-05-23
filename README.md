@@ -18,9 +18,11 @@ This is a [i18next](https://github.com/i18next/i18next) backend to be used in De
 
 # Usage
 
+> **IMPORTANT**: Because we use `mongo@v0.7.0` as a driver to connect to MongoDB, please also follow the guidelines and requirements of the library. See [Mongo in Deno](https://deno.land/x/mongo#important) for further information.
+
 ```ts
 import i18next from 'https://deno.land/x/i18next/index.js'
-import { Backend } from 'https://raw.githubusercontent.com/lamualfa/dn-i18next-mongo-backend/master/mod.ts'
+import { Backend } from 'https://deno.land/x/i18next_mongo_backend/mod.ts'
 
 i18next.use(Backend).init({
   // Backend Options
